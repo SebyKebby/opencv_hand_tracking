@@ -4,7 +4,7 @@
 #       Implement handtracking(done)
 #       Implement overlay (done)
 #       Create a system to interpret hand motion (done)
-#       Convert handtracked motion to keyboard input
+#       Convert handtracked motion to keyboard input (done)
 #       Do the deed
 
 import pyautogui
@@ -25,7 +25,7 @@ def count_fingers(lst):
             cnt +=1
     if (lst.landmark[17].y*100 - lst.landmark[20].y*100) > thresh :
         cnt +=1
-    if (lst.landmark[4].y*100 - lst.landmark[5].y*100) > 5 :
+    if (lst.landmark[4].y*100 - lst.landmark[5].y*100) > 3 :
           cnt +=1
     return cnt
 
@@ -41,6 +41,7 @@ mpDraw = mp.solutions.drawing_utils
 pTime = 0
 cTime = 0
 
+prev = -1
 while True:
     success, img = cap.read()
     imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -49,11 +50,19 @@ while True:
 
     if results.multi_hand_landmarks:
             
-            hand_keyPoints = results.multi_hand_landmarks[0]
+        hand_keyPoints = results.multi_hand_landmarks[0]
 
-            print(count_fingers(hand_keyPoints))
+        print(count_fingers(hand_keyPoints))
 
-            mpDraw.draw_landmarks(img, hand_keyPoints, mpHands.HAND_CONNECTIONS)
+        cnt = count_fingers(hand_keyPoints)
+        if not(prev == cnt) :
+            if (cnt == 4):
+                pyautogui.click(button = 'left')
+            elif (cnt == 3):
+                pyautogui.click(button = 'right')
+            prev = cnt
+
+        mpDraw.draw_landmarks(img, hand_keyPoints, mpHands.HAND_CONNECTIONS)
 
 
     cTime = time.time()
